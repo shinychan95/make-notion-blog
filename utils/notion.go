@@ -95,6 +95,17 @@ func ParsePropTitle(properties string) (text string) {
 	return
 }
 
+func ParseChecked(properties string) bool {
+	var propData map[string]interface{}
+	err := json.Unmarshal([]byte(properties), &propData)
+	CheckError(err)
+
+	checkedData := propData["checked"].([]interface{})
+	checkedValue := checkedData[0].([]interface{})[0].(string)
+
+	return checkedValue == "Yes"
+}
+
 func ParsePropTitleSimple(properties string) (text string) {
 	var props map[string]interface{}
 	if err := json.Unmarshal([]byte(properties), &props); err != nil {

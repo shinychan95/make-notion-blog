@@ -197,12 +197,19 @@ func parseBlock(block Block, indentLevel int) string {
 		utils.CheckError(err)
 
 		imageFileName := fmt.Sprintf("%s.png", block.ID)
-		imagePath := filepath.Join(config.OutputDirectory, imageFileName)
+		imagePath := filepath.Join(config.OutputDirectory, "assets", imageFileName)
 
 		err = downloadImage(imageURL, imagePath)
 		utils.CheckError(err)
 
-		output = fmt.Sprintf("%s![](%s)\n", indent, imagePath)
+		output = fmt.Sprintf("%s![](%s)\n", indent, "/assets/"+imageFileName)
+	case "to_do":
+		checked := utils.ParseChecked(block.Properties.String)
+		if checked {
+			output = fmt.Sprintf("%s- [x] %s\n", indent, title)
+		} else {
+			output = fmt.Sprintf("%s- [ ] %s\n", indent, title)
+		}
 
 	default:
 		log.Printf("Unsupported block type: %s", block.Type)
@@ -236,7 +243,7 @@ func main() {
 	utils.CheckError(err)
 	defer db.Close()
 
-	rootID := "37f33625-6b38-4fe5-bbe2-77c23fb902bc"
+	rootID := "0e00d47d-bb28-4497-9438-ce3e2dbfda68"
 	blocks := getBlockData(db, rootID)
 
 	// TODO -  데이터베이스 내 변경된 페이지 추적
@@ -258,7 +265,7 @@ func main() {
 
 	datePrefix := time.Now().Format("2006-01-02")
 	markdownFileName := fmt.Sprintf("%s-%s.md", datePrefix, utils.SanitizeFileName(pageTitle))
-	markdownFilePath := filepath.Join(outputDir, markdownFileName)
+	markdownFilePath := filepath.Join(outputDir, "_posts", markdownFileName)
 
 	err = ioutil.WriteFile(markdownFilePath, []byte(markdownOutput), 0644)
 	utils.CheckError(err)
