@@ -1,4 +1,6 @@
 {
   "db_path": "/Users/user/Library/Application Support/Notion/notion.db",
-  "output_directory": "/Users/user/github/shinychan95.github.io"
+  "#": "/Users/user/github/shinychan95.github.io",
+  "output_directory": "/Users/user/github/make-notion-blog",
+  "root_block_id": "0e00d47d-bb28-4497-9438-ce3e2dbfda68"
 }

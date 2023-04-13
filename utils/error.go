@@ -11,3 +11,8 @@ func CheckError(err error) {
 		log.Fatalf("Error in %s:%d: %v", file, line, err)
 	}
 }
+
+func ExecError(message string) {
+	_, file, line, _ := runtime.Caller(1)
+	log.Fatalf("Error in %s:%d: %v", file, line, message)
+}
