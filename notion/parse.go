@@ -6,12 +6,11 @@ import (
 	"github.com/shinychan95/make-notion-blog/markdown"
 	"github.com/shinychan95/make-notion-blog/utils"
 	"log"
-	"path/filepath"
 	"strings"
 	"sync"
 )
 
-func ParseBlock(block Block, indentLevel int, wg *sync.WaitGroup, errCh chan error) string {
+func ParseBlock(rootId string, block Block, indentLv int, wg *sync.WaitGroup, errCh chan error) string {
 	var output string
 
 	if block.Properties.String != "" {
@@ -19,7 +18,7 @@ func ParseBlock(block Block, indentLevel int, wg *sync.WaitGroup, errCh chan err
 		block.ParsedProp.Language = ParsePropLanguage(block.Properties.String)
 	}
 
-	indent := strings.Repeat("   ", indentLevel)
+	indent := strings.Repeat("   ", indentLv)
 	text := strings.ReplaceAll(block.ParsedProp.Title, "\n", "\n"+indent)
 
 	switch block.Type {
@@ -42,7 +41,7 @@ func ParseBlock(block Block, indentLevel int, wg *sync.WaitGroup, errCh chan err
 	case "toggle":
 		var content string
 		for _, child := range block.Children {
-			content += ParseBlock(child, indentLevel+1, wg, errCh)
+			content += ParseBlock(rootId, child, indentLv+1, wg, errCh)
 		}
 		output = markdown.Toggle(indent, text, content)
 		block.Children = nil
@@ -51,16 +50,8 @@ func ParseBlock(block Block, indentLevel int, wg *sync.WaitGroup, errCh chan err
 	case "callout":
 		output = markdown.Callout(indent, text)
 	case "image":
-		imageURL, err := getImageURL(block.ID)
-		utils.CheckError(err)
-
-		imageFileName := fmt.Sprintf("%s.png", block.ID)
-		imagePath := filepath.Join(config.OutputDirectory, "assets", imageFileName)
-
-		wg.Add(1)
-		downloadImageIfNotExist(imageURL, imagePath, wg, errCh)
-
-		output = markdown.Image(indent, "/assets/"+imageFileName)
+		imagePath := SaveImageIfNotExist(rootId, block.ID, wg, errCh)
+		output = markdown.Image(indent, imagePath)
 	case "to_do":
 		output = markdown.ToDo(indent, text, ParseChecked(block.Properties.String))
 	case "table":
@@ -72,7 +63,7 @@ func ParseBlock(block Block, indentLevel int, wg *sync.WaitGroup, errCh chan err
 	}
 
 	for _, child := range block.Children {
-		output += ParseBlock(child, indentLevel+1, wg, errCh)
+		output += ParseBlock(rootId, child, indentLv+1, wg, errCh)
 	}
 
 	return output

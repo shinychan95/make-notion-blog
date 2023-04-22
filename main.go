@@ -16,9 +16,11 @@ import (
 )
 
 var db *sql.DB
+var wg sync.WaitGroup
+var errCh = make(chan error)
 
-func savePageBlockAsMarkdown(rootBlockID, outputDir string) {
-	blocks := notion.GetBlockData(db, rootBlockID)
+func savePageBlockAsMarkdown(rootID, outputDir string) {
+	blocks := notion.GetBlockData(db, rootID)
 	if blocks[0].Type != "page" {
 		log.Fatal("root block id is not page")
 	}
@@ -28,23 +30,9 @@ func savePageBlockAsMarkdown(rootBlockID, outputDir string) {
 
 	notion.AssignNumbersToBlocks(&blocks)
 
-	var wg sync.WaitGroup
-	errCh := make(chan error)
-
 	var markdownOutput string
 	for _, block := range blocks[0].Children {
-		markdownOutput += notion.ParseBlock(block, 0, &wg, errCh)
-	}
-
-	go func() {
-		wg.Wait()
-		close(errCh)
-	}()
-
-	for err := range errCh {
-		if err != nil {
-			log.Fatalf("Error occurred while downloading image: %v", err)
-		}
+		markdownOutput += notion.ParseBlock(rootID, block, 0, &wg, errCh)
 	}
 
 	if _, err := os.Stat(outputDir); os.IsNotExist(err) {
@@ -62,11 +50,18 @@ func savePageBlockAsMarkdown(rootBlockID, outputDir string) {
 }
 
 func saveDatabaseBlockAsMarkdown(rootBlockID, outputDir string) {
+	wg.Add(1)
+	go func() {
+		savePageBlockAsMarkdown(rootBlockID, outputDir)
+		wg.Done()
+	}()
+
+	wg.Wait()
 
 }
 
 func main() {
-	// flag 를 사용하여 실행 시 설정 파일 경로 입력 (default: ./config.j
+	// flag 를 사용하여 실행 시 설정 파일 경로 입력 (default: ./config.json)
 	configFilePath := flag.String("config", "config.json", "Path to the config.json file")
 	flag.Parse()
 
@@ -87,6 +82,12 @@ func main() {
 	rootBlockID, err := utils.ConvertToUUIDv4(config.RootBlockID)
 	utils.CheckError(err)
 
+	// notion 이미지 상대 경로 저장
+	relativeImgDir, _ := utils.GetRelativeImagePath(config.OutputDir, config.ImageDir)
+
+	// notion 이미지 저장을 위한 key 및 경로 저장
+	notion.Init(config.ApiKey, config.OutputDir, relativeImgDir)
+
 	rootBlockType := notion.GetRootBlockType(db, rootBlockID)
 
 	// root block 의 타입에 따라 로직 다르게 동작
@@ -97,6 +98,18 @@ func main() {
 		saveDatabaseBlockAsMarkdown(rootBlockID, config.OutputDir)
 	default:
 		utils.ExecError("not possible root block type")
+	}
+
+	// 이미지 다운로드 go routine 대기
+	go func() {
+		wg.Wait()
+		close(errCh)
+	}()
+
+	for err = range errCh {
+		if err != nil {
+			log.Fatalf("Error occurred while downloading image: %v", err)
+		}
 	}
 
 	log.Println("finish make notion into blog")

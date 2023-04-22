@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"fmt"
 	"os/exec"
+	"path/filepath"
 	"regexp"
 	"strings"
 )
@@ -59,4 +60,23 @@ func FindNotionDBPath() (dbPath string) {
 	}
 
 	return
+}
+
+func GetRelativeImagePath(outputDir, imageDir string) (relativePath string, err error) {
+	absOutputDir, err := filepath.Abs(outputDir)
+	if err != nil {
+		return "", err
+	}
+
+	absImageDir, err := filepath.Abs(imageDir)
+	if err != nil {
+		return "", err
+	}
+
+	relPath, err := filepath.Rel(absOutputDir, absImageDir)
+	if err != nil {
+		return "", err
+	}
+
+	return filepath.ToSlash(relPath), nil
 }

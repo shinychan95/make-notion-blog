@@ -1,6 +1,7 @@
 {
   "db_path": "/Users/user/Library/Application Support/Notion/notion.db",
-  "#": "/Users/user/github/shinychan95.github.io",
+  "api_key":"secret_RrJPUd5a8BLNDZZp6BqGosxNikfmARDK3BcTzydyjBr",
   "output_directory": "/Users/user/github/make-notion-blog",
-  "root_block_id": "0e00d47d-bb28-4497-9438-ce3e2dbfda68"
+  "image_directory": "/Users/user/github/make-notion-blog/assets/image",
+  "root_block_id": "1eafdee6-189c-46fe-a0fe-5bff83f07309"
 }

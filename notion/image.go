@@ -28,26 +28,20 @@ type ImageBlock struct {
 	} `json:"image"`
 }
 
-const APIKey = "secret_RrJPUd5a8BLNDZZp6BqGosxNikfmARDK3BcTzydyjBr"
-const Version = "2022-06-28"
-
-func SaveImage(blockId, outputDir string, wg *sync.WaitGroup, errCh chan error) {
-	imageURL, err := getImageURL(blockId)
+func SaveImageIfNotExist(rootId, imageId string, wg *sync.WaitGroup, errCh chan error) (imagePath string) {
+	imageURL, err := getImageURL(imageId)
 	utils.CheckError(err)
 
-	imageFileName := fmt.Sprintf("%s.png", blockId)
-	imagePath := filepath.Join(outputDir, "assets", imageFileName)
+	imageFileName := fmt.Sprintf("%s.png", imageId)
+	imagePath = filepath.Join(RelativeImgDir, rootId, imageFileName)
 
 	wg.Add(1)
-	downloadImageIfNotExist(imageURL, imagePath, wg, errCh)
-}
 
-func downloadImageIfNotExist(imageURL, imagePath string, wg *sync.WaitGroup, errCh chan error) {
 	if !checkImageExist(imagePath) {
 		go func(url, path string) {
 			defer wg.Done()
 			fmt.Printf("Downloading image: %s\n", url) // 이미지 다운로드 시작 메시지 출력
-			err := downloadImage(url, path)
+			err = downloadImage(url, path)
 			if err != nil {
 				errCh <- err
 			} else {
@@ -57,12 +51,22 @@ func downloadImageIfNotExist(imageURL, imagePath string, wg *sync.WaitGroup, err
 	} else {
 		wg.Done()
 	}
+
+	return
 }
 
 func downloadImage(url, imagePath string) error {
 	resp, err := http.Get(url)
 	utils.CheckError(err)
 	defer resp.Body.Close()
+
+	dir := filepath.Dir(imagePath)
+
+	// 경로가 존재하지 않으면 폴더 생성
+	if _, err = os.Stat(dir); os.IsNotExist(err) {
+		err = os.MkdirAll(dir, 0755)
+		utils.CheckError(err)
+	}
 
 	// 이미지 파일 저장
 	out, err := os.Create(imagePath)
@@ -82,8 +86,8 @@ func getImageURL(blockID string) (string, error) {
 		return "", err
 	}
 
-	req.Header.Add("Authorization", "Bearer "+APIKey)
-	req.Header.Add("Notion-Version", Version)
+	req.Header.Add("Authorization", "Bearer "+ApiKey)
+	req.Header.Add("Notion-Version", ApiVersion)
 
 	resp, err := client.Do(req)
 	if err != nil {
