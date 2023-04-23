@@ -19,7 +19,7 @@ var db *sql.DB
 var wg sync.WaitGroup
 var errCh = make(chan error)
 
-func savePageBlockAsMarkdown(rootID, outputDir string) {
+func savePageBlockAsMarkdown(rootID, header, outputDir string) {
 	blocks := notion.GetBlockData(db, rootID)
 	if blocks[0].Type != "page" {
 		log.Fatal("root block id is not page")
@@ -31,6 +31,7 @@ func savePageBlockAsMarkdown(rootID, outputDir string) {
 	notion.AssignNumbersToBlocks(&blocks)
 
 	var markdownOutput string
+	markdownOutput += header + "\n"
 	for _, block := range blocks[0].Children {
 		markdownOutput += notion.ParseBlock(rootID, block, 0, &wg, errCh)
 	}
@@ -49,12 +50,24 @@ func savePageBlockAsMarkdown(rootID, outputDir string) {
 	fmt.Printf("Markdown file saved: %s\n", markdownFilePath)
 }
 
-func saveDatabaseBlockAsMarkdown(rootBlockID, outputDir string) {
-	wg.Add(1)
-	go func() {
-		savePageBlockAsMarkdown(rootBlockID, outputDir)
-		wg.Done()
-	}()
+func saveDatabaseBlockAsMarkdown(rootId, outputDir string) {
+	// collection_id 값 구하고, 해당 값을 parent_id 로 하는 페이지들을 구한다. (alive 값이 1인 block 페이지만)
+	collectionId, _ := notion.GetCollectionId(db, rootId)
+	collectionSchema := notion.GetCollectionSchema(db, collectionId)
+
+	// template is NULL, alive 값이 1인 collection 내 페이지들을 가져온다.
+	pages, _ := notion.GetPagesWithProperties(db, collectionId, collectionSchema)
+
+	// property 내 Status 가 Drafting 인 글들만 프로세스를 실행한다.
+	for _, page := range pages {
+		if page.Status == "Drafting" {
+			wg.Add(1)
+			go func(rootId, outputDir string) {
+				savePageBlockAsMarkdown(rootId, page.ToString(), outputDir)
+				wg.Done()
+			}(page.ID, outputDir)
+		}
+	}
 
 	wg.Wait()
 
@@ -79,7 +92,7 @@ func main() {
 	utils.CheckError(err)
 	defer db.Close()
 
-	rootBlockID, err := utils.ConvertToUUIDv4(config.RootBlockID)
+	rootBlockID, err := utils.ConvertToUUIDv4(config.RootId)
 	utils.CheckError(err)
 
 	// notion 이미지 상대 경로 저장
@@ -93,7 +106,7 @@ func main() {
 	// root block 의 타입에 따라 로직 다르게 동작
 	switch rootBlockType {
 	case "page":
-		savePageBlockAsMarkdown(rootBlockID, config.OutputDir)
+		savePageBlockAsMarkdown(rootBlockID, "", config.OutputDir)
 	case "collection_view_page":
 		saveDatabaseBlockAsMarkdown(rootBlockID, config.OutputDir)
 	default:

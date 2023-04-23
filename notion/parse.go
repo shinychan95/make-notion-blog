@@ -10,7 +10,7 @@ import (
 	"sync"
 )
 
-func ParseBlock(rootId string, block Block, indentLv int, wg *sync.WaitGroup, errCh chan error) string {
+func ParseBlock(rootID string, block Block, indentLv int, wg *sync.WaitGroup, errCh chan error) string {
 	var output string
 
 	if block.Properties.String != "" {
@@ -41,7 +41,7 @@ func ParseBlock(rootId string, block Block, indentLv int, wg *sync.WaitGroup, er
 	case "toggle":
 		var content string
 		for _, child := range block.Children {
-			content += ParseBlock(rootId, child, indentLv+1, wg, errCh)
+			content += ParseBlock(rootID, child, indentLv+1, wg, errCh)
 		}
 		output = markdown.Toggle(indent, text, content)
 		block.Children = nil
@@ -50,7 +50,7 @@ func ParseBlock(rootId string, block Block, indentLv int, wg *sync.WaitGroup, er
 	case "callout":
 		output = markdown.Callout(indent, text)
 	case "image":
-		imagePath := SaveImageIfNotExist(rootId, block.ID, wg, errCh)
+		imagePath := SaveImageIfNotExist(rootID, block.ID, wg, errCh)
 		output = markdown.Image(indent, imagePath)
 	case "to_do":
 		output = markdown.ToDo(indent, text, ParseChecked(block.Properties.String))
@@ -63,7 +63,7 @@ func ParseBlock(rootId string, block Block, indentLv int, wg *sync.WaitGroup, er
 	}
 
 	for _, child := range block.Children {
-		output += ParseBlock(rootId, child, indentLv+1, wg, errCh)
+		output += ParseBlock(rootID, child, indentLv+1, wg, errCh)
 	}
 
 	return output
