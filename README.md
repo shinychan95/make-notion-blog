@@ -8,6 +8,8 @@ Notion 에서 글을 작성하고, 곧바로 블로그로 원터치로 배포하
 
 ## 사용법
 
+![prototype](https://user-images.githubusercontent.com/39409255/233854586-3d1705be-4916-4416-ad2f-e8fb8fcdb512.gif)
+
 1. Notion 내 새로운 페이지를 만들고, 해당 페이지 템플릿을 `블로그 포스팅 캘린더` 로 설정해야 한다.
    - 해당 페이지는 `collection_view_page` 타입이다.
    - 블로그 포스팅 메타 데이터에 맞춰 아래 property 들이 연동된다.
