@@ -6,6 +6,7 @@ import (
 	"github.com/shinychan95/make-notion-blog/markdown"
 	"github.com/shinychan95/make-notion-blog/utils"
 	"log"
+	"path/filepath"
 	"strings"
 	"sync"
 )
@@ -50,8 +51,8 @@ func ParseBlock(rootID string, block Block, indentLv int, wg *sync.WaitGroup, er
 	case "callout":
 		output = markdown.Callout(indent, text)
 	case "image":
-		imagePath := SaveImageIfNotExist(rootID, block.ID, wg, errCh)
-		output = markdown.Image(indent, imagePath)
+		imageFileName := SaveImageIfNotExist(rootID, block.ID, wg, errCh)
+		output = markdown.Image(indent, filepath.Join(MarkdownImgPath, rootID, imageFileName))
 	case "to_do":
 		output = markdown.ToDo(indent, text, ParseChecked(block.Properties.String))
 	case "table":

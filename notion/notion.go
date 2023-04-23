@@ -11,16 +11,12 @@ import (
 )
 
 var (
-	ApiKey         string
-	ApiVersion     = "2022-06-28"
-	OutputDir      string
-	RelativeImgDir string
+	ApiKey          string
+	ApiVersion      = "2022-06-28"
+	PostDir         string
+	ImgDir          string
+	MarkdownImgPath string
 )
-
-func init() {
-	ApiKey = ""
-	OutputDir = ""
-}
 
 type Page struct {
 	ID         string
@@ -42,10 +38,11 @@ type Schema struct {
 type Schemas map[string]Schema
 
 // Init 추가적인 인자의
-func Init(apiKey, outputDir, relativeImgDir string) {
+func Init(apiKey, postDir, imgDir, markdownImgPath string) {
 	ApiKey = apiKey
-	OutputDir = outputDir
-	RelativeImgDir = relativeImgDir
+	PostDir = postDir
+	ImgDir = imgDir
+	MarkdownImgPath = markdownImgPath
 }
 
 func (pg *Page) ToString() string {
@@ -55,25 +52,24 @@ func (pg *Page) ToString() string {
 	sb.WriteString(fmt.Sprintf("title: %s\n", pg.Title))
 	sb.WriteString(fmt.Sprintf("author: %s\n", pg.Author))
 	sb.WriteString(fmt.Sprintf("date: %s\n", pg.Date.Format("2006-01-02 15:04:05 -0700")))
-	sb.WriteString("categories: ")
 
+	sb.WriteString("categories: [")
 	for i, category := range pg.Categories {
 		if i > 0 {
 			sb.WriteString(", ")
 		}
-		sb.WriteString(fmt.Sprintf("[%s]", category))
+		sb.WriteString(category)
 	}
-	sb.WriteString("\n")
+	sb.WriteString("]\n")
 
-	sb.WriteString("tags: ")
-
+	sb.WriteString("tags: [")
 	for i, tag := range pg.Tags {
 		if i > 0 {
 			sb.WriteString(", ")
 		}
-		sb.WriteString(tag)
+		sb.WriteString(strings.ToLower(tag))
 	}
-	sb.WriteString("\n")
+	sb.WriteString("]\n")
 
 	sb.WriteString("---\n")
 
@@ -170,7 +166,7 @@ func parsePageProperties(rawProperties string, schema map[string]Schema) (Page, 
 	page := Page{}
 
 	// Author, Date 의 경우, static 하게 입력한다.
-	page.Author = "Chanyoung Kim"
+	page.Author = "chanyoung_kim"
 	page.Date = time.Now()
 
 	for key, value := range propertiesMap {

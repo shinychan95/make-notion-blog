@@ -28,12 +28,12 @@ type ImageBlock struct {
 	} `json:"image"`
 }
 
-func SaveImageIfNotExist(rootID, imageId string, wg *sync.WaitGroup, errCh chan error) (imagePath string) {
+func SaveImageIfNotExist(rootID, imageId string, wg *sync.WaitGroup, errCh chan error) string {
 	imageURL, err := getImageURL(imageId)
 	utils.CheckError(err)
 
 	imageFileName := fmt.Sprintf("%s.png", imageId)
-	imagePath = filepath.Join(RelativeImgDir, rootID, imageFileName)
+	imagePath := filepath.Join(ImgDir, rootID, imageFileName)
 
 	wg.Add(1)
 
@@ -52,7 +52,7 @@ func SaveImageIfNotExist(rootID, imageId string, wg *sync.WaitGroup, errCh chan 
 		wg.Done()
 	}
 
-	return
+	return imageFileName
 }
 
 func downloadImage(url, imagePath string) error {

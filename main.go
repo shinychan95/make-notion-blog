@@ -50,7 +50,7 @@ func savePageBlockAsMarkdown(rootID, header, outputDir string) {
 	fmt.Printf("Markdown file saved: %s\n", markdownFilePath)
 }
 
-func saveDatabaseBlockAsMarkdown(rootId, outputDir string) {
+func saveDatabaseBlockAsMarkdown(rootId, postDir string) {
 	// collection_id 값 구하고, 해당 값을 parent_id 로 하는 페이지들을 구한다. (alive 값이 1인 block 페이지만)
 	collectionId, _ := notion.GetCollectionId(db, rootId)
 	collectionSchema := notion.GetCollectionSchema(db, collectionId)
@@ -62,10 +62,11 @@ func saveDatabaseBlockAsMarkdown(rootId, outputDir string) {
 	for _, page := range pages {
 		if page.Status == "Drafting" {
 			wg.Add(1)
-			go func(rootId, outputDir string) {
-				savePageBlockAsMarkdown(rootId, page.ToString(), outputDir)
+			go func(rootId, header, postDir string) {
+
+				savePageBlockAsMarkdown(rootId, header, postDir)
 				wg.Done()
-			}(page.ID, outputDir)
+			}(page.ID, page.ToString(), postDir)
 		}
 	}
 
@@ -96,19 +97,19 @@ func main() {
 	utils.CheckError(err)
 
 	// notion 이미지 상대 경로 저장
-	relativeImgDir, _ := utils.GetRelativeImagePath(config.OutputDir, config.ImageDir)
+	markdownImgDir := utils.RemoveCommonPrefix(config.PostDir, config.ImgDir)
 
 	// notion 이미지 저장을 위한 key 및 경로 저장
-	notion.Init(config.ApiKey, config.OutputDir, relativeImgDir)
+	notion.Init(config.ApiKey, config.PostDir, config.ImgDir, markdownImgDir)
 
 	rootBlockType := notion.GetRootBlockType(db, rootBlockID)
 
 	// root block 의 타입에 따라 로직 다르게 동작
 	switch rootBlockType {
 	case "page":
-		savePageBlockAsMarkdown(rootBlockID, "", config.OutputDir)
+		savePageBlockAsMarkdown(rootBlockID, "", config.PostDir)
 	case "collection_view_page":
-		saveDatabaseBlockAsMarkdown(rootBlockID, config.OutputDir)
+		saveDatabaseBlockAsMarkdown(rootBlockID, config.PostDir)
 	default:
 		utils.ExecError("not possible root block type")
 	}

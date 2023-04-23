@@ -4,7 +4,6 @@ import (
 	"bufio"
 	"fmt"
 	"os/exec"
-	"path/filepath"
 	"regexp"
 	"strings"
 )
@@ -62,21 +61,23 @@ func FindNotionDBPath() (dbPath string) {
 	return
 }
 
-func GetRelativeImagePath(outputDir, imageDir string) (relativePath string, err error) {
-	absOutputDir, err := filepath.Abs(outputDir)
-	if err != nil {
-		return "", err
+func RemoveCommonPrefix(firstPath, secondPath string) string {
+	firstPathParts := strings.Split(firstPath, "/")
+	secondPathParts := strings.Split(secondPath, "/")
+
+	shortestLength := len(firstPathParts)
+	if len(secondPathParts) < shortestLength {
+		shortestLength = len(secondPathParts)
 	}
 
-	absImageDir, err := filepath.Abs(imageDir)
-	if err != nil {
-		return "", err
+	lastCommonIndex := -1
+	for i := 0; i < shortestLength; i++ {
+		if firstPathParts[i] == secondPathParts[i] {
+			lastCommonIndex = i
+		} else {
+			break
+		}
 	}
 
-	relPath, err := filepath.Rel(absOutputDir, absImageDir)
-	if err != nil {
-		return "", err
-	}
-
-	return filepath.ToSlash(relPath), nil
+	return "/" + strings.Join(secondPathParts[lastCommonIndex+1:], "/")
 }
