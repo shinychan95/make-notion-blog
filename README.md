@@ -1,10 +1,14 @@
 # make-notion-blog
 
-> 막상 열심히(reverse 엔지니어링) 만들었는데, 사용성을 고려하니 정작 나만 쓸 것 같은 도구이다(🫠)
+> 막상 열심히(reverse 엔지니어링으로) 만들었는데, 사용성을 고려하니 정작 나만 쓸 것 같은 도구이다🫠
 
 Notion 에서 글을 작성하고, 곧바로 블로그로 원터치로 배포하기 위한 도구이다.
 
-사용 편의성을 가지는 부분은 Notion (복사 붙여넣기, markdown 추출)로 원활하지 않던, (표, 이미지, 기타 컴포넌트) 등을 편리하게 옮길 수 있다.
+사용 편의성을 가지는 부분은 표, 이미지, 노션만의 타입 객체(callout, toggle) 등을 편리하게 옮길 수 있다.
+
+**Example,**
+- [Notion 페이지](https://shinychan95.notion.site/Notion-1eafdee6189c46fea0fe5bff83f07309)
+- [블로그 페이지](https://shinychan95.github.io/posts/Notion-글,-버튼-하나로-블로그-배포-가능/)
 
 ## 사용법
 
