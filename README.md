@@ -16,7 +16,7 @@ Notion 에서 글을 작성하고, 곧바로 블로그로 원터치로 배포하
    - 해당 페이지는 `collection_view_page` 타입이다.
    - 블로그 포스팅 메타 데이터에 맞춰 아래 property 들이 연동된다.
       - Status : `Drafting` 상태의 페이지들만이 마크다운 변환된다.
-      - Date : _(현재 프로그램 실행 시간으로 동작)_
+      - Date : 날짜를 가져와서, 마크다운 파일 이름 및 메타 데이터에 반영된다.
       - Categories : 블로그 내 Catogories 에 해당하며, 첫번째부터 첫 depth 에 해당한다.
       - Tags : 실제 블로그 내에는 소문자로 입력된다.
 2. 이미지 다운로드를 위해 Notion Integration 생성 및 해당 페이지에 Integration 을 연결한다.
