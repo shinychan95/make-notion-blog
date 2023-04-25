@@ -18,6 +18,10 @@ func SubSubHeader(indent, text string) string {
 }
 
 func Text(indent, text string) string {
+	if text == "" {
+		text = "<br/>\n"
+	}
+
 	return fmt.Sprintf("%s%s\n", indent, text)
 }
 
