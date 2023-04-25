@@ -2,6 +2,7 @@ package markdown
 
 import (
 	"fmt"
+	"strings"
 )
 
 func Header(indent, text string) string {
@@ -42,11 +43,12 @@ func Toggle(indent, text, content string) string {
 }
 
 func Quote(indent, text string) string {
-	return fmt.Sprintf("%s> %s\n", indent, text)
+	text = strings.Replace(text, "\n", "<br/>", -1)
+	return fmt.Sprintf("%s> %s\n\n", indent, text)
 }
 
 func Callout(indent, text string) string {
-	return fmt.Sprintf("%s> 🦖 %s\n", indent, text)
+	return fmt.Sprintf("%s> 🦖 %s\n\n", indent, text)
 }
 
 func Image(indent, imagePath string) string {
