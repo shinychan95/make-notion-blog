@@ -167,7 +167,6 @@ func parsePageProperties(rawProperties string, schema map[string]Schema) (Page, 
 
 	// Author, Date 의 경우, static 하게 입력한다.
 	page.Author = "chanyoung_kim"
-	page.Date = time.Now()
 
 	for key, value := range propertiesMap {
 		schemaValue := schema[key]
@@ -182,6 +181,21 @@ func parsePageProperties(rawProperties string, schema map[string]Schema) (Page, 
 			page.Status = propertyValue[0].(string)
 		case "Title":
 			page.Title = propertyValue[0].(string)
+		case "Date":
+			dateProperty := propertyValue[1].([]interface{})[0].([]interface{})[1].(map[string]interface{})
+			dateString := dateProperty["start_date"].(string)
+			timeString, ok := dateProperty["start_time"]
+			if !ok {
+				timeString = "00:00"
+			}
+
+			dateTime := dateString + "T" + timeString.(string) + ":00"
+
+			location, _ := time.LoadLocation("Asia/Seoul")
+			page.Date, err = time.ParseInLocation("2006-01-02T15:04:05", dateTime, location)
+			if err != nil {
+				return Page{}, err
+			}
 		}
 	}
 

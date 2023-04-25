@@ -19,7 +19,7 @@ var db *sql.DB
 var wg sync.WaitGroup
 var errCh = make(chan error)
 
-func savePageBlockAsMarkdown(rootID, header, outputDir string) {
+func savePageBlockAsMarkdown(rootID, header, outputDir string, date time.Time) {
 	blocks := notion.GetBlockData(db, rootID)
 	if blocks[0].Type != "page" {
 		log.Fatal("root block id is not page")
@@ -40,7 +40,7 @@ func savePageBlockAsMarkdown(rootID, header, outputDir string) {
 		os.MkdirAll(outputDir, os.ModePerm)
 	}
 
-	datePrefix := time.Now().Format("2006-01-02")
+	datePrefix := date.Format("2006-01-02")
 	markdownFileName := fmt.Sprintf("%s-%s.md", datePrefix, utils.SanitizeFileName(pageTitle))
 	markdownFilePath := filepath.Join(outputDir, "", markdownFileName)
 
@@ -63,8 +63,7 @@ func saveDatabaseBlockAsMarkdown(rootId, postDir string) {
 		if page.Status == "Drafting" {
 			wg.Add(1)
 			go func(rootId, header, postDir string) {
-
-				savePageBlockAsMarkdown(rootId, header, postDir)
+				savePageBlockAsMarkdown(rootId, header, postDir, page.Date)
 				wg.Done()
 			}(page.ID, page.ToString(), postDir)
 		}
@@ -107,7 +106,7 @@ func main() {
 	// root block 의 타입에 따라 로직 다르게 동작
 	switch rootBlockType {
 	case "page":
-		savePageBlockAsMarkdown(rootBlockID, "", config.PostDir)
+		savePageBlockAsMarkdown(rootBlockID, "", config.PostDir, time.Now())
 	case "collection_view_page":
 		saveDatabaseBlockAsMarkdown(rootBlockID, config.PostDir)
 	default:
