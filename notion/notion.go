@@ -46,7 +46,7 @@ func Init(apiKey, postDir, imgDir, markdownImgPath string) {
 	MarkdownImgPath = markdownImgPath
 }
 
-func (pg *Page) ToString() string {
+func (pg *Page) GetMetaString() string {
 	var sb strings.Builder
 
 	sb.WriteString("---\n")

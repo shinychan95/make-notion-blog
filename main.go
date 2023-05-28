@@ -61,10 +61,10 @@ func saveDatabaseBlockAsMarkdown(rootId, postDir string) {
 	for _, page := range pages {
 		if page.Status == "Published" {
 			wg.Add(1)
-			go func(rootId, header, postDir string) {
-				savePageBlockAsMarkdown(rootId, header, postDir, page.Path, page.Published)
+			go func(page notion.Page, postDir string) {
+				savePageBlockAsMarkdown(page.ID, page.GetMetaString(), postDir, page.Path, page.Published)
 				wg.Done()
-			}(page.ID, page.ToString(), postDir)
+			}(page, postDir)
 		}
 	}
 
