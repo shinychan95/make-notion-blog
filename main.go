@@ -59,7 +59,7 @@ func saveDatabaseBlockAsMarkdown(rootId, postDir string) {
 
 	// property 내 Status 가 Drafting 인 글들만 프로세스를 실행한다.
 	for _, page := range pages {
-		if page.Status == "Drafting" {
+		if page.Status == "Published" {
 			wg.Add(1)
 			go func(rootId, header, postDir string) {
 				savePageBlockAsMarkdown(rootId, header, postDir, page.Path, page.Published)
