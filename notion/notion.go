@@ -20,12 +20,13 @@ var (
 
 type Page struct {
 	ID         string
+	Title      string
+	Status     string
+	Path       string
+	Author     string
 	Categories []string
 	Tags       []string
-	Author     string
-	Date       time.Time
-	Status     string
-	Title      string
+	Published  time.Time
 }
 
 type Schema struct {
@@ -51,7 +52,7 @@ func (pg *Page) ToString() string {
 	sb.WriteString("---\n")
 	sb.WriteString(fmt.Sprintf("title: %s\n", pg.Title))
 	sb.WriteString(fmt.Sprintf("author: %s\n", pg.Author))
-	sb.WriteString(fmt.Sprintf("date: %s\n", pg.Date.Format("2006-01-02 15:04:05 -0700")))
+	sb.WriteString(fmt.Sprintf("date: %s\n", pg.Published.Format("2006-01-02 15:04:05 -0700")))
 
 	sb.WriteString("categories: [")
 	for i, category := range pg.Categories {
@@ -166,7 +167,7 @@ func parsePageProperties(rawProperties string, schema map[string]Schema) (Page, 
 	page := Page{}
 
 	// Author, Date 의 경우, static 하게 입력한다.
-	page.Author = "chanyoung_kim"
+	page.Author = "chanyoung.kim"
 
 	for key, value := range propertiesMap {
 		schemaValue := schema[key]
@@ -181,7 +182,9 @@ func parsePageProperties(rawProperties string, schema map[string]Schema) (Page, 
 			page.Status = propertyValue[0].(string)
 		case "Title":
 			page.Title = propertyValue[0].(string)
-		case "Date":
+		case "Path":
+			page.Path = propertyValue[0].(string)
+		case "Published":
 			dateProperty := propertyValue[1].([]interface{})[0].([]interface{})[1].(map[string]interface{})
 			dateString := dateProperty["start_date"].(string)
 			timeString, ok := dateProperty["start_time"]
@@ -192,7 +195,7 @@ func parsePageProperties(rawProperties string, schema map[string]Schema) (Page, 
 			dateTime := dateString + "T" + timeString.(string) + ":00"
 
 			location, _ := time.LoadLocation("Asia/Seoul")
-			page.Date, err = time.ParseInLocation("2006-01-02T15:04:05", dateTime, location)
+			page.Published, err = time.ParseInLocation("2006-01-02T15:04:05", dateTime, location)
 			if err != nil {
 				return Page{}, err
 			}

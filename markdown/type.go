@@ -30,7 +30,7 @@ func Code(indent, lang, text string) string {
 }
 
 func Divider(indent string) string {
-	return fmt.Sprintf("%s---\n", indent)
+	return fmt.Sprintf("%s\n---\n\n", indent)
 }
 
 func BulletedList(indent, text string) string {
