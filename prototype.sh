@@ -6,7 +6,7 @@ CONFIG_PATH="/Users/user/github/make-notion-blog/config.json"
 REPO_PATH="/Users/user/github/shinychan95.github.io"
 
 # 바이너리 실행 전 모든 post 삭제 (이미지는 유지)
-rm $REPO_PATH/_post/*
+rm $REPO_PATH/_posts/*
 
 # 바이너리 실행 (config.json 파일 경로를 파라미터로 전달)
 $BINARY_PATH -config $CONFIG_PATH
