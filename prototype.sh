@@ -9,7 +9,7 @@ REPO_PATH="/Users/user/github/shinychan95.github.io"
 rm $REPO_PATH/_posts/*
 
 # 바이너리 실행 (config.json 파일 경로를 파라미터로 전달)
-$BINARY_PATH -config $CONFIG_PATH
+$BINARY_PATH -type collection_view_page -config $CONFIG_PATH
 
 # git 저장소 경로로 이동
 cd $REPO_PATH

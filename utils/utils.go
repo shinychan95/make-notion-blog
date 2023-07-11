@@ -8,6 +8,21 @@ import (
 	"strings"
 )
 
+// SliceToString Convert a string slice to a string, where each element is separated by a comma.
+func SliceToString(s []string, transformFn func(string) string) string {
+	var sb strings.Builder
+	for i, element := range s {
+		if i > 0 {
+			sb.WriteString(", ")
+		}
+		if transformFn != nil {
+			element = transformFn(element)
+		}
+		sb.WriteString(element)
+	}
+	return sb.String()
+}
+
 func SanitizeFileName(filename string) string {
 	// 파일 이름에 사용할 수 없는 문자를 정규식으로 정의
 	reg, err := regexp.Compile(`[<>:"/\\|?*]`)
@@ -22,15 +37,18 @@ func SanitizeFileName(filename string) string {
 	return sanitized
 }
 
-func ConvertToUUIDv4(input string) (string, error) {
+func CheckUUIDv4Format(id string) (idWithHyphen string, err error) {
 	uuidPattern := regexp.MustCompile(`^([0-9a-fA-F]{8})-?([0-9a-fA-F]{4})-?([0-9a-fA-F]{4})-?([0-9a-fA-F]{4})-?([0-9a-fA-F]{12})$`)
-	matches := uuidPattern.FindStringSubmatch(input)
+	matches := uuidPattern.FindStringSubmatch(id)
 
 	if matches == nil {
-		return "", fmt.Errorf("input is not a valid UUID v4")
+		err = fmt.Errorf("input is not a valid UUID v4")
+		return
 	}
 
-	return fmt.Sprintf("%s-%s-%s-%s-%s", matches[1], matches[2], matches[3], matches[4], matches[5]), nil
+	idWithHyphen = fmt.Sprintf("%s-%s-%s-%s-%s", matches[1], matches[2], matches[3], matches[4], matches[5])
+
+	return idWithHyphen, err
 }
 
 func FindNotionDBPath() (dbPath string) {
@@ -59,25 +77,4 @@ func FindNotionDBPath() (dbPath string) {
 	}
 
 	return
-}
-
-func RemoveCommonPrefix(firstPath, secondPath string) string {
-	firstPathParts := strings.Split(firstPath, "/")
-	secondPathParts := strings.Split(secondPath, "/")
-
-	shortestLength := len(firstPathParts)
-	if len(secondPathParts) < shortestLength {
-		shortestLength = len(secondPathParts)
-	}
-
-	lastCommonIndex := -1
-	for i := 0; i < shortestLength; i++ {
-		if firstPathParts[i] == secondPathParts[i] {
-			lastCommonIndex = i
-		} else {
-			break
-		}
-	}
-
-	return "/" + strings.Join(secondPathParts[lastCommonIndex+1:], "/")
 }
